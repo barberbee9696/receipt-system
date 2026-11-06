@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ระบบใบเสร็จ 4 บริษัท</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f3f5f9; --card:#fff; --text:#1d2433; --muted:#6b7487; --line:#dde2ea;
+    --pri:#2459d6; --pri-soft:#e8eefc; --danger:#d23b3b; --ok:#1d9a5b;
+    --t-deposit:#8a4fd8; --t-receipt:#1d9a5b; --t-tax:#d97a12;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Sarabun',Tahoma,sans-serif;background:var(--bg);color:var(--text);font-size:15px}
+  button{font-family:inherit;font-size:14px;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--text);padding:7px 12px;border-radius:8px}
+  button:hover{border-color:var(--pri)}
+  button.pri{background:var(--pri);border-color:var(--pri);color:#fff}
+  button.danger{color:var(--danger)}
+  button.sm{padding:4px 9px;font-size:13px}
+  input,select,textarea{font-family:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--line);border-radius:7px;width:100%;background:#fff;color:var(--text)}
+  textarea{resize:vertical;min-height:60px}
+  label{display:block;font-size:13px;color:var(--muted);margin-bottom:3px}
+  .top{background:#162447;color:#fff;padding:10px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+  .top h1{font-size:19px;margin:0;font-weight:700}
+  .top nav{display:flex;gap:6px;flex-wrap:wrap}
+  .top nav button{background:transparent;color:#cfd8ef;border-color:transparent}
+  .top nav button.active{background:#ffffff1f;color:#fff}
+  main{padding:18px 20px;max-width:1400px;margin:0 auto}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+  .row>*{flex:1;min-width:140px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media(max-width:800px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+  .chips button.active{background:var(--pri);color:#fff;border-color:var(--pri)}
+  .tabs{display:flex;gap:0;border-bottom:2px solid var(--line);margin-bottom:12px;flex-wrap:wrap}
+  .tabs button{border:none;border-radius:0;background:transparent;padding:9px 16px;border-bottom:3px solid transparent;margin-bottom:-2px;color:var(--muted)}
+  .tabs button.active{color:var(--pri);border-bottom-color:var(--pri);font-weight:600}
+  table.list{width:100%;border-collapse:collapse;font-size:14px}
+  table.list th,table.list td{padding:8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  table.list th{background:#f7f9fc;color:var(--muted);font-weight:600;font-size:13px}
+  table.list tr:hover td{background:#fafbfe}
+  .r{text-align:right!important}.c{text-align:center!important}
+  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:12px;color:#fff;white-space:nowrap}
+  .b-deposit{background:var(--t-deposit)}.b-receipt{background:var(--t-receipt)}.b-tax{background:var(--t-tax)}
+  .plate{display:inline-block;background:#fff6d6;border:1px solid #e9d27a;border-radius:5px;padding:0 6px;font-size:13px;margin:1px 2px}
+  .muted{color:var(--muted)}
+  .actions{display:flex;gap:4px;flex-wrap:wrap}
+  .summary{display:flex;gap:16px;justify-content:flex-end;padding:10px 4px;font-weight:600;flex-wrap:wrap}
+  .hidden{display:none!important}
+  .modal{position:fixed;inset:0;background:#0b1430a8;display:none;align-items:flex-start;justify-content:center;padding:24px 12px;overflow:auto;z-index:50}
+  .modal.open{display:flex}
+  .modal .box{background:#fff;border-radius:14px;width:100%;max-width:1000px;padding:20px;position:relative}
+  .modal .box h2{margin:0 0 14px;font-size:20px}
+  #custModal{z-index:60}
+  .login{position:fixed;inset:0;background:linear-gradient(135deg,#162447,#2459d6);display:flex;align-items:center;justify-content:center;padding:16px;z-index:100}
+  .login-box{background:#fff;border-radius:16px;padding:28px 26px;width:100%;max-width:380px;box-shadow:0 20px 50px #0006}
+  .login-box h2{margin:0 0 4px;text-align:center;font-size:21px}
+  .login-box .lg{font-size:42px;text-align:center}
+  .login-box label{margin-top:12px}
+  .login-box button{width:100%;margin-top:18px;padding:10px;font-size:16px}
+  .err{color:var(--danger);font-size:14px;min-height:20px;margin-top:8px}
+  .who{margin-left:auto;display:flex;gap:8px;align-items:center;font-size:14px;color:#cfd8ef}
+  .who b{color:#fff}
+  .who button{background:transparent;color:#cfd8ef;border-color:#ffffff40;padding:5px 10px;font-size:13px}
+  body:not(.is-admin) .admin-only{display:none!important}
+  .b-admin{background:#162447}.b-user{background:#8b93a6}.b-off{background:var(--danger)}
+  .sec{margin-top:16px;padding-top:12px;border-top:1px dashed var(--line)}
+  .sec h3{margin:0 0 10px;font-size:16px}
+  table.items{width:100%;border-collapse:collapse}
+  table.items th{font-size:13px;color:var(--muted);text-align:left;padding:4px}
+  table.items td{padding:3px}
+  .totals{margin-left:auto;max-width:360px;margin-top:10px}
+  .totals div{display:flex;justify-content:space-between;padding:3px 0}
+  .totals .grand{font-size:18px;font-weight:700;border-top:2px solid var(--text);margin-top:4px;padding-top:6px}
+  .drop{border:2px dashed #b9c4da;border-radius:10px;padding:14px;text-align:center;color:var(--muted);background:#f9fbff}
+  .drop.over{border-color:var(--pri);background:var(--pri-soft)}
+  .thumbs{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  .thumb{position:relative;width:120px;height:160px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fafafa}
+  .thumb img{width:100%;height:100%;object-fit:contain}
+  .thumb button{position:absolute;top:4px;right:4px;padding:1px 7px;background:#fff;color:var(--danger)}
+  .check{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--text);cursor:pointer}
+  .check input{width:18px;height:18px}
+  .foot{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+  .co-card h3{margin:0 0 10px}
+  .logo-prev{height:60px;max-width:160px;object-fit:contain;border:1px solid var(--line);border-radius:6px;background:#fff}
+  .preview-bar{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:14px;position:sticky;top:-20px;background:#fff;padding:8px 0;z-index:2}
+  .preview-host{background:#7d8597;padding:16px;border-radius:10px;overflow:auto}
+  .preview-host .page{margin:0 auto 16px;box-shadow:0 4px 18px #0005;zoom:.75}
+  .empty{padding:30px;text-align:center;color:var(--muted)}
+
+  /* ===== หน้ากระดาษ A4 ===== */
+  .page{width:210mm;height:297mm;padding:11mm 13mm;background:#fff;color:#000;display:flex;flex-direction:column;overflow:hidden;font-size:10.5pt;line-height:1.35;font-family:'Sarabun',Tahoma,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .p-head{display:flex;justify-content:space-between;gap:12px;border-bottom:2px solid #000;padding-bottom:6px}
+  .p-co{display:flex;gap:10px;align-items:flex-start}
+  .p-co img{max-height:22mm;max-width:35mm;object-fit:contain}
+  .p-co .nm{font-size:14pt;font-weight:700}
+  .p-title{text-align:right;min-width:62mm}
+  .p-title .th{font-size:15pt;font-weight:700}
+  .p-title .en{font-size:9pt;letter-spacing:.5px}
+  .p-title .lbl{display:inline-block;border:1.5px solid #000;padding:0 10px;margin-top:4px;font-weight:700}
+  .p-info{display:flex;gap:8px;margin-top:6px}
+  .p-info .bx{border:1px solid #000;border-radius:4px;padding:5px 8px}
+  .p-info .cu{flex:1}
+  .p-info .dn{width:66mm}
+  .p-info table td{padding:0 4px 0 0;vertical-align:top}
+  .p-info table td:first-child{white-space:nowrap;font-weight:600}
+  table.p-items{width:100%;border-collapse:collapse;margin-top:6px}
+  table.p-items th{background:#e9e9e9;border:1px solid #000;padding:3px 5px;font-weight:700}
+  table.p-items td{border-left:1px solid #000;border-right:1px solid #000;padding:2px 5px}
+  table.p-items tbody tr:last-child td{border-bottom:1px solid #000}
+  .p-sum{display:flex;gap:8px;margin-top:0}
+  .p-sum .words{flex:1;border:1px solid #000;border-top:none;padding:4px 8px;background:#f3f3f3;display:flex;align-items:center;font-weight:600}
+  .p-sum table{border-collapse:collapse;width:72mm}
+  .p-sum table td{border:1px solid #000;border-top:none;padding:2px 6px}
+  .p-sum table tr.g td{font-weight:700;background:#e9e9e9}
+  .p-pay{margin-top:5px;font-size:10pt}
+  .p-slip{flex:0 0 auto;border:1px dashed #666;border-radius:4px;margin-top:5px;padding:2mm}
+  .p-slip .ttl{font-weight:700;font-size:9.5pt;margin-bottom:1mm}
+  .p-slip-row{display:flex;gap:3mm;justify-content:center;overflow:hidden}
+  .p-slip-row div{flex:0 1 auto;min-width:0;height:100%;display:flex;justify-content:center}
+  .p-slip-row img{height:100%;max-width:100%;object-fit:contain}
+  .p-spacer{flex:1 1 0}
+  /* ไม่แนบสลิป: ขยายตัวอักษร และยืดตารางรายการให้เต็มหน้ากระดาษ */
+  .page.full{font-size:12.5pt;line-height:1.45}
+  .page.full .p-co .nm{font-size:17pt}
+  .page.full .p-title .th{font-size:18pt}
+  .page.full .p-title .en{font-size:10pt}
+  .page.full .p-info{margin-top:10px}
+  .page.full .p-info .bx{padding:8px 10px}
+  .page.full .p-info .dn{width:74mm}
+  .p-items-wrap{flex:1 1 0;min-height:0;margin-top:10px;overflow:hidden}
+  .p-items-wrap table.p-items{height:100%;margin-top:0}
+  table.p-items tr.r-item td{height:1px;padding-top:5px;padding-bottom:5px}
+  .page.full table.p-items th{padding:6px 5px}
+  .page.full .p-sum .words{padding:6px 10px}
+  .page.full .p-sum table{width:82mm}
+  .page.full .p-sum table td{padding:5px 8px}
+  .page.full .p-pay{margin-top:10px;font-size:12pt}
+  .page.full .p-note{font-size:12pt;margin-top:6px}
+  .page.full .p-sign{margin-top:10mm;font-size:12pt}
+  .page.full .p-sign .ln{width:70mm;height:16mm}
+  .p-sign{display:flex;justify-content:space-around;margin-top:6mm;text-align:center;font-size:10pt}
+  .p-sign .ln{width:60mm;border-bottom:1px dotted #000;height:12mm}
+  .p-note{font-size:9.5pt;margin-top:4px}
+
+  #printRoot{display:none}
+  @page{size:A4;margin:0}
+  @media print{
+    body{background:#fff}
+    body>*:not(#printRoot){display:none!important}
+    #printRoot{display:block!important}
+    #printRoot .page{page-break-after:always;break-after:page;margin:0;box-shadow:none;zoom:1}
+    #printRoot .page:last-child{page-break-after:auto;break-after:auto}
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== หน้าล็อคอิน ========== -->
+<div id="loginScreen" class="login">
+  <form class="login-box" id="loginForm" autocomplete="on">
+    <div class="lg">🧾</div>
+    <h2>ระบบใบเสร็จ 4 บริษัท</h2>
+    <p class="muted" id="loginHint" style="text-align:center;margin:4px 0 6px">กรุณาเข้าสู่ระบบ</p>
+    <div id="setupName" class="hidden"><label>ชื่อที่แสดง</label><input id="lDisplay" placeholder="เช่น คุณสมศรี"></div>
+    <label>ชื่อผู้ใช้</label><input id="lUser" autocomplete="username" autocapitalize="off">
+    <label>รหัสผ่าน</label><input type="password" id="lPass" autocomplete="current-password">
+    <div id="setupPass2" class="hidden"><label>ยืนยันรหัสผ่าน</label><input type="password" id="lPass2" autocomplete="new-password"></div>
+    <div class="err" id="loginErr"></div>
+    <button class="pri" id="loginBtn" type="submit">เข้าสู่ระบบ</button>
+  </form>
+</div>
+
+<div class="app hidden">
+  <header class="top">
+    <h1>🧾 ระบบใบเสร็จ 4 บริษัท</h1>
+    <nav id="nav">
+      <button data-view="docs" class="active">เอกสาร</button>
+      <button data-view="customers">ลูกค้า / ทะเบียนรถ</button>
+      <button data-view="companies" class="admin-only">ตั้งค่าบริษัท</button>
+      <button data-view="users" class="admin-only">ผู้ใช้งาน</button>
+      <button data-view="backup">สำรองข้อมูล</button>
+    </nav>
+    <div class="who">
+      👤 <b id="whoName"></b>
+      <button id="btnChangePw">เปลี่ยนรหัสผ่าน</button>
+      <button id="btnLogout">ออกจากระบบ</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ========== เอกสาร ========== -->
+    <section id="view-docs">
+      <div class="card">
+        <div class="chips" id="coChips"></div>
+        <div class="tabs" id="typeTabs"></div>
+        <div class="row" style="margin-bottom:12px">
+          <div style="flex:2"><label>ค้นหา (เลขที่ / ลูกค้า / ทะเบียนรถ)</label><input id="fQ" placeholder="พิมพ์เพื่อค้นหา..."></div>
+          <div><label>ตั้งแต่วันที่</label><input type="date" id="fFrom"></div>
+          <div><label>ถึงวันที่</label><input type="date" id="fTo"></div>
+          <div style="flex:0 0 auto"><button class="pri" id="btnNewDoc">+ สร้างเอกสารใหม่</button></div>
+        </div>
+        <div style="overflow:auto">
+          <table class="list">
+            <thead><tr><th>วันที่</th><th>เลขที่</th><th>ประเภท</th><th>บริษัท</th><th>ลูกค้า</th><th>ทะเบียนรถ</th><th class="r">ยอดรวม</th><th class="c">สลิป</th><th></th></tr></thead>
+            <tbody id="docRows"></tbody>
+          </table>
+        </div>
+        <div class="summary" id="docSummary"></div>
+      </div>
+    </section>
+
+    <!-- ========== ลูกค้า ========== -->
+    <section id="view-customers" class="hidden">
+      <div class="card">
+        <div class="row" style="margin-bottom:12px">
+          <div style="flex:3"><label>ค้นหาลูกค้า / ทะเบียนรถ</label><input id="cQ" placeholder="ชื่อ, ที่อยู่ หรือทะเบียนรถ"></div>
+          <div style="flex:0 0 auto"><button class="pri" id="btnNewCust">+ เพิ่มลูกค้า</button></div>
+        </div>
+        <p class="muted" style="margin-top:0">ชื่อและที่อยู่ลูกค้าใช้ร่วมกันทั้ง 4 บริษัท ส่วนทะเบียนรถจะแยกตามแต่ละบริษัท</p>
+        <div style="overflow:auto">
+          <table class="list">
+            <thead id="custHead"></thead>
+            <tbody id="custRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== บริษัท ========== -->
+    <section id="view-companies" class="hidden">
+      <div class="grid2" id="coCards"></div>
+    </section>
+
+    <!-- ========== สำรองข้อมูล ========== -->
+    <section id="view-backup" class="hidden">
+      <div class="card" style="max-width:700px">
+        <h3 style="margin-top:0">สำรอง / กู้คืนข้อมูล</h3>
+        <p class="muted">ข้อมูลทั้งหมด (บริษัท ลูกค้า เอกสาร และรูปสลิป) ถูกเก็บไว้ในเบราว์เซอร์เครื่องนี้ ควรกดสำรองข้อมูลเป็นไฟล์เก็บไว้อย่างสม่ำเสมอ</p>
+        <div class="row">
+          <div style="flex:0 0 auto"><button class="pri" id="btnExport">⬇ ดาวน์โหลดไฟล์สำรอง (.json)</button></div>
+          <div style="flex:0 0 auto" class="admin-only"><button id="btnImport">⬆ กู้คืนจากไฟล์สำรอง</button><input type="file" id="importFile" accept=".json,application/json" class="hidden"></div>
+        </div>
+        <p class="muted" id="storageInfo" style="margin-bottom:0"></p>
+      </div>
+    </section>
+
+    <!-- ========== ผู้ใช้งาน ========== -->
+    <section id="view-users" class="hidden">
+      <div class="card" style="max-width:900px">
+        <div class="row" style="margin-bottom:12px;align-items:center">
+          <h3 style="margin:0">ผู้ใช้งานระบบ</h3>
+          <div style="flex:0 0 auto"><button class="pri" id="btnNewUser">+ เพิ่มผู้ใช้</button></div>
+        </div>
+        <table class="list">
+          <thead><tr><th>ชื่อผู้ใช้</th><th>ชื่อที่แสดง</th><th>สิทธิ์</th><th>สถานะ</th><th>เข้าใช้ล่าสุด</th><th></th></tr></thead>
+          <tbody id="userRows"></tbody>
+        </table>
+        <p class="muted" style="font-size:13px;margin-bottom:0">ผู้ดูแลระบบ: จัดการผู้ใช้ ตั้งค่าบริษัท ลบเอกสาร และกู้คืนข้อมูลได้ · ผู้ใช้ทั่วไป: สร้าง/แก้ไข/พิมพ์เอกสาร และจัดการลูกค้าได้</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ========== ฟอร์มเอกสาร ========== -->
+<div class="modal" id="docModal">
+  <div class="box">
+    <h2 id="docModalTitle">สร้างเอกสาร</h2>
+    <div class="grid4">
+      <div><label>บริษัท</label><select id="dCompany"></select></div>
+      <div><label>ประเภทเอกสาร</label><select id="dType"></select></div>
+      <div><label>เลขที่เอกสาร <a href="#" id="dRegen" style="font-size:12px">(ออกเลขใหม่)</a></label><input id="dNo"></div>
+      <div><label>วันที่</label><input type="date" id="dDate"></div>
+    </div>
+
+    <div class="sec">
+      <h3>ข้อมูลลูกค้า</h3>
+      <div class="grid3">
+        <div style="grid-column:span 2">
+          <label>ลูกค้า</label>
+          <div style="display:flex;gap:6px"><select id="dCust"></select><button id="dNewCust" style="white-space:nowrap">+ ลูกค้าใหม่</button></div>
+        </div>
+        <div><label>ทะเบียนรถ (ของบริษัทที่เลือก)</label><input id="dPlate" list="plateList" placeholder="เลือกหรือพิมพ์ทะเบียนใหม่"><datalist id="plateList"></datalist></div>
+      </div>
+      <div class="grid3" style="margin-top:10px">
+        <div style="grid-column:span 2"><label>ที่อยู่ลูกค้า</label><textarea id="dAddr" rows="2"></textarea></div>
+        <div>
+          <label>เลขประจำตัวผู้เสียภาษี</label><input id="dTaxId">
+          <label style="margin-top:6px">สาขา</label><input id="dBranch" placeholder="เช่น สำนักงานใหญ่">
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h3>รายการ</h3>
+      <table class="items">
+        <thead><tr><th style="width:36px">#</th><th>รายละเอียด</th><th style="width:90px">จำนวน</th><th style="width:130px">ราคา/หน่วย</th><th style="width:130px" class="r">จำนวนเงิน</th><th style="width:40px"></th></tr></thead>
+        <tbody id="itemRows"></tbody>
+      </table>
+      <button class="sm" id="addItem" style="margin-top:6px">+ เพิ่มรายการ</button>
+      <div class="row" style="margin-top:10px">
+        <div id="vatWrap"><label>การคิดภาษีมูลค่าเพิ่ม 7%</label>
+          <select id="dVatMode"><option value="exclude">ราคายังไม่รวม VAT (บวกเพิ่ม 7%)</option><option value="include">ราคารวม VAT แล้ว</option></select>
+        </div>
+        <div></div>
+      </div>
+      <div class="totals" id="formTotals"></div>
+    </div>
+
+    <div class="sec">
+      <h3>การชำระเงิน</h3>
+      <div class="grid3">
+        <div><label>วิธีชำระ</label><select id="dPay"><option>เงินโอน</option><option>เงินสด</option><option>เช็ค</option><option>บัตรเครดิต</option></select></div>
+        <div><label>ธนาคาร / เลขอ้างอิง</label><input id="dPayRef" placeholder="เช่น กสิกรไทย 12:30 น."></div>
+        <div><label>วันที่ชำระ</label><input type="date" id="dPayDate"></div>
+      </div>
+      <div style="margin-top:10px"><label>หมายเหตุ</label><input id="dNote"></div>
+    </div>
+
+    <div class="sec">
+      <h3>สลิปโอนเงิน</h3>
+      <div class="drop" id="slipDrop">
+        ลากไฟล์รูปมาวางที่นี่ · กด <b>Ctrl+V</b> เพื่อวางรูปที่คัดลอกไว้ · หรือ
+        <button class="sm" id="slipPick">เลือกรูปสลิป</button>
+        <input type="file" id="slipFile" accept="image/*" multiple class="hidden">
+      </div>
+      <div class="thumbs" id="slipThumbs"></div>
+      <label class="check" style="margin-top:12px"><input type="checkbox" id="dPrintSlip" checked> พิมพ์สลิปโอนเงินแนบในใบเสร็จ (หน้า A4 เดียวกัน)</label>
+    </div>
+
+    <div class="foot">
+      <button id="dCancel">ยกเลิก</button>
+      <button id="dSave">บันทึก</button>
+      <button class="pri" id="dSavePrint">บันทึกและพิมพ์</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ฟอร์มลูกค้า ========== -->
+<div class="modal" id="custModal">
+  <div class="box" style="max-width:760px">
+    <h2 id="custModalTitle">ลูกค้า</h2>
+    <div class="grid2">
+      <div><label>ชื่อลูกค้า *</label><input id="cName"></div>
+      <div><label>เบอร์โทร</label><input id="cPhone"></div>
+    </div>
+    <div style="margin-top:10px"><label>ที่อยู่</label><textarea id="cAddr" rows="2"></textarea></div>
+    <div class="grid2" style="margin-top:10px">
+      <div><label>เลขประจำตัวผู้เสียภาษี</label><input id="cTaxId"></div>
+      <div><label>สาขา</label><input id="cBranch"></div>
+    </div>
+    <div class="sec">
+      <h3>ทะเบียนรถแยกตามบริษัท</h3>
+      <p class="muted" style="margin-top:0;font-size:13px">ใส่ได้หลายคัน คั่นด้วยการขึ้นบรรทัดใหม่ หรือเครื่องหมายจุลภาค ( , )</p>
+      <div class="grid2" id="cPlates"></div>
+    </div>
+    <div class="foot">
+      <button id="cCancel">ยกเลิก</button>
+      <button class="pri" id="cSave">บันทึกลูกค้า</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ฟอร์มผู้ใช้ ========== -->
+<div class="modal" id="userModal">
+  <div class="box" style="max-width:480px">
+    <h2 id="userModalTitle">ผู้ใช้</h2>
+    <label>ชื่อผู้ใช้ (สำหรับล็อคอิน) *</label><input id="uUser" autocapitalize="off">
+    <label style="margin-top:10px">ชื่อที่แสดง *</label><input id="uName">
+    <label style="margin-top:10px">สิทธิ์</label>
+    <select id="uRole"><option value="user">ผู้ใช้ทั่วไป</option><option value="admin">ผู้ดูแลระบบ</option></select>
+    <label style="margin-top:10px" id="uPassLbl">รหัสผ่าน *</label><input type="password" id="uPass" autocomplete="new-password">
+    <label class="check" style="margin-top:12px"><input type="checkbox" id="uActive" checked> เปิดใช้งาน</label>
+    <div class="foot"><button id="uCancel">ยกเลิก</button><button class="pri" id="uSave">บันทึก</button></div>
+  </div>
+</div>
+
+<!-- ========== เปลี่ยนรหัสผ่าน ========== -->
+<div class="modal" id="pwModal">
+  <div class="box" style="max-width:420px">
+    <h2>เปลี่ยนรหัสผ่าน</h2>
+    <label>รหัสผ่านเดิม</label><input type="password" id="pwOld" autocomplete="current-password">
+    <label style="margin-top:10px">รหัสผ่านใหม่</label><input type="password" id="pwNew" autocomplete="new-password">
+    <label style="margin-top:10px">ยืนยันรหัสผ่านใหม่</label><input type="password" id="pwNew2" autocomplete="new-password">
+    <div class="foot"><button id="pwCancel">ยกเลิก</button><button class="pri" id="pwSave">บันทึก</button></div>
+  </div>
+</div>
+
+<!-- ========== ตัวอย่างก่อนพิมพ์ ========== -->
+<div class="modal" id="previewModal">
+  <div class="box" style="max-width:900px">
+    <div class="preview-bar">
+      <h2 style="margin:0;flex:1">ตัวอย่างก่อนพิมพ์</h2>
+      <label class="check"><input type="checkbox" id="pSlip"> แนบสลิปโอนเงิน</label>
+      <label class="check">ขนาดสลิป
+        <select id="pSlipSize" style="width:auto">
+          <option value="45">เล็กมาก</option><option value="60">เล็ก</option><option value="80">กลาง</option><option value="110">ใหญ่</option>
+        </select></label>
+      <label class="check"><input type="checkbox" id="pCopy"> พิมพ์สำเนาด้วย</label>
+      <button id="pClose">ปิด</button>
+      <button class="pri" id="pPrint">🖨 พิมพ์</button>
+    </div>
+    <div class="preview-host" id="previewHost"></div>
+  </div>
+</div>
+
+<div id="printRoot"></div>
+
+<script>
+/* ================= ค่าคงที่ ================= */
+const TYPES = {
+  deposit: { name: 'ใบรับฝากชำระเงิน', en: 'PAYMENT DEPOSIT RECEIPT', prefix: 'DP' },
+  receipt: { name: 'ใบเสร็จรับเงิน', en: 'RECEIPT', prefix: 'RC' },
+  tax:     { name: 'ใบเสร็จรับเงิน/ใบกำกับภาษี', en: 'RECEIPT / TAX INVOICE', prefix: 'IV' },
+};
+const VAT_RATE = 7;
+const DEFAULT_COMPANIES = [
+  { id: 'co1', code: 'A', name: 'บริษัท ที่ 1 จำกัด', address: '', taxId: '', branch: 'สำนักงานใหญ่', phone: '', logo: '' },
+  { id: 'co2', code: 'B', name: 'บริษัท ที่ 2 จำกัด', address: '', taxId: '', branch: 'สำนักงานใหญ่', phone: '', logo: '' },
+  { id: 'co3', code: 'C', name: 'บริษัท ที่ 3 จำกัด', address: '', taxId: '', branch: 'สำนักงานใหญ่', phone: '', logo: '' },
+  { id: 'co4', code: 'D', name: 'บริษัท ที่ 4 จำกัด', address: '', taxId: '', branch: 'สำนักงานใหญ่', phone: '', logo: '' },
+];
+
+/* ================= ฐานข้อมูล (IndexedDB) ================= */
+const DB = {
+  db: null,
+  open() {
+    return new Promise((res, rej) => {
+      const r = indexedDB.open('receiptApp4co', 2);
+      r.onupgradeneeded = () => {
+        const d = r.result;
+        ['companies', 'customers', 'docs', 'users'].forEach(s => {
+          if (!d.objectStoreNames.contains(s)) d.createObjectStore(s, { keyPath: 'id' });
+        });
+      };
+      r.onsuccess = () => { this.db = r.result; res(); };
+      r.onerror = () => rej(r.error);
+    });
+  },
+  tx(store, mode, fn) {
+    return new Promise((res, rej) => {
+      const t = this.db.transaction(store, mode);
+      const req = fn(t.objectStore(store));
+      t.oncomplete = () => res(req && req.result);
+      t.onerror = () => rej(t.error);
+    });
+  },
+  all(s) { return this.tx(s, 'readonly', st => st.getAll()); },
+  put(s, v) { return this.tx(s, 'readwrite', st => st.put(v)); },
+  del(s, id) { return this.tx(s, 'readwrite', st => st.delete(id)); },
+  clear(s) { return this.tx(s, 'readwrite', st => st.clear()); },
+};
+
+/* ================= สถานะโปรแกรม ================= */
+let companies = [], customers = [], docs = [], users = [];
+let currentUser = null;
+const isAdmin = () => currentUser?.role === 'admin';
+const IDLE_MINUTES = 30;   // ไม่มีการใช้งานเกินเวลานี้ จะออกจากระบบอัตโนมัติ
+const filter = { company: 'all', type: 'all', q: '', from: '', to: '' };
+let form = null;          // เอกสารที่กำลังแก้ไข
+let custEditing = null;   // ลูกค้าที่กำลังแก้ไข
+let custCallback = null;
+let previewDoc = null;
+
+/* ================= เครื่องมือ ================= */
+const $ = id => document.getElementById(id);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const num = v => { const n = parseFloat(String(v).replace(/,/g, '')); return isNaN(n) ? 0 : n; };
+const r2 = n => Math.round((n + Number.EPSILON) * 100) / 100;
+const money = n => num(n).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const qtyFmt = n => num(n).toLocaleString('th-TH', { maximumFractionDigits: 2 });
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+const TH_MONTHS = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+function thDate(s, long = true) {
+  if (!s) return '';
+  const [y, m, d] = s.split('-').map(Number);
+  return long ? `${d} ${TH_MONTHS[m - 1]} ${y + 543}` : `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y + 543}`;
+}
+const company = id => companies.find(c => c.id === id);
+const customer = id => customers.find(c => c.id === id);
+const splitPlates = s => String(s || '').split(/[\n,]+/).map(x => x.trim()).filter(Boolean);
+
+/* แปลงตัวเลขเป็นคำอ่านภาษาไทย */
+function bahtText(amount) {
+  amount = r2(num(amount));
+  const NUM = ['ศูนย์', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า'];
+  const UNIT = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน'];
+  const read6 = (s, higher) => {
+    s = s.replace(/^0+/, '');
+    let out = '';
+    const L = s.length;
+    for (let i = 0; i < L; i++) {
+      const d = +s[i], pos = L - i - 1;
+      if (d === 0) continue;
+      if (pos === 0 && d === 1 && (L > 1 || higher)) out += 'เอ็ด';
+      else if (pos === 1 && d === 2) out += 'ยี่';
+      else if (pos === 1 && d === 1) out += '';
+      else out += NUM[d];
+      out += UNIT[pos];
+    }
+    return out;
+  };
+  const read = s => s.length > 6 ? read(s.slice(0, -6)) + 'ล้าน' + read6(s.slice(-6), true) : read6(s, false);
+  const baht = Math.floor(amount);
+  const satang = Math.round((amount - baht) * 100);
+  if (baht === 0 && satang === 0) return 'ศูนย์บาทถ้วน';
+  let t = baht > 0 ? read(String(baht)) + 'บาท' : '';
+  t += satang > 0 ? read6(String(satang), false) + 'สตางค์' : 'ถ้วน';
+  return t;
+}
+
+/* คำนวณยอดเงิน */
+function calc(d) {
+  const sum = r2(d.items.reduce((a, it) => a + num(it.qty) * num(it.price), 0));
+  if (d.type !== 'tax') return { sum, before: sum, vat: 0, total: sum };
+  if (d.vatMode === 'include') {
+    const vat = r2(sum * VAT_RATE / (100 + VAT_RATE));
+    return { sum, before: r2(sum - vat), vat, total: sum };
+  }
+  const vat = r2(sum * VAT_RATE / 100);
+  return { sum, before: sum, vat, total: r2(sum + vat) };
+}
+
+/* ออกเลขที่เอกสาร: [ประเภท][รหัสบริษัท][ปี พ.ศ. 2 หลัก][เดือน]-[ลำดับ] เช่น RCA6910-0001 */
+function genNo(companyId, type, date, exceptId) {
+  const c = company(companyId) || { code: '' };
+  const [y, m] = (date || today()).split('-').map(Number);
+  const pre = `${TYPES[type].prefix}${c.code}${String((y + 543) % 100).padStart(2, '0')}${String(m).padStart(2, '0')}-`;
+  let max = 0;
+  docs.forEach(x => {
+    if (x.id !== exceptId && x.no && x.no.startsWith(pre)) {
+      const n = parseInt(x.no.slice(pre.length), 10);
+      if (n > max) max = n;
+    }
+  });
+  return pre + String(max + 1).padStart(4, '0');
+}
+
+/* ย่อรูปก่อนเก็บ เพื่อประหยัดพื้นที่ */
+function compressImage(file, max = 1400, quality = 0.85) {
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const ratio = Math.min(1, max / Math.max(img.width, img.height));
+        const w = Math.round(img.width * ratio), h = Math.round(img.height * ratio);
+        const cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        const ctx = cv.getContext('2d');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        res(cv.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => rej(new Error('ไม่สามารถอ่านไฟล์รูปได้'));
+      img.src = fr.result;
+    };
+    fr.onerror = () => rej(fr.error);
+    fr.readAsDataURL(file);
+  });
+}
+
+/* ================= หน้าเอกสาร ================= */
+function renderFilters() {
+  $('coChips').innerHTML = [`<button data-co="all" class="${filter.company === 'all' ? 'active' : ''}">ทุกบริษัท</button>`]
+    .concat(companies.map(c => `<button data-co="${c.id}" class="${filter.company === c.id ? 'active' : ''}">[${esc(c.code)}] ${esc(c.name)}</button>`)).join('');
+  $('typeTabs').innerHTML = [`<button data-type="all" class="${filter.type === 'all' ? 'active' : ''}">ทั้งหมด</button>`]
+    .concat(Object.entries(TYPES).map(([k, t]) => `<button data-type="${k}" class="${filter.type === k ? 'active' : ''}">${t.name}</button>`)).join('');
+}
+
+function filteredDocs() {
+  const q = filter.q.trim().toLowerCase();
+  return docs.filter(d =>
+    (filter.company === 'all' || d.companyId === filter.company) &&
+    (filter.type === 'all' || d.type === filter.type) &&
+    (!filter.from || d.date >= filter.from) &&
+    (!filter.to || d.date <= filter.to) &&
+    (!q || [d.no, d.custName, d.plate, d.note].join(' ').toLowerCase().includes(q))
+  ).sort((a, b) => (b.date + b.no).localeCompare(a.date + a.no));
+}
+
+function renderDocs() {
+  renderFilters();
+  const list = filteredDocs();
+  if (!list.length) {
+    $('docRows').innerHTML = `<tr><td colspan="9" class="empty">ยังไม่มีเอกสาร — กด “+ สร้างเอกสารใหม่”</td></tr>`;
+  } else {
+    $('docRows').innerHTML = list.map(d => {
+      const c = company(d.companyId) || {};
+      return `<tr>
+        <td>${thDate(d.date, false)}</td>
+        <td><b>${esc(d.no)}</b>${d.updatedBy ? `<br><span class="muted" style="font-size:12px">โดย ${esc(d.updatedBy)}</span>` : ''}</td>
+        <td><span class="badge b-${d.type}">${TYPES[d.type].name}</span></td>
+        <td>[${esc(c.code)}] ${esc(c.name)}</td>
+        <td>${esc(d.custName)}</td>
+        <td>${d.plate ? `<span class="plate">${esc(d.plate)}</span>` : ''}</td>
+        <td class="r">${money(calc(d).total)}</td>
+        <td class="c">${d.slips.length ? '📎 ' + d.slips.length : '<span class="muted">-</span>'}</td>
+        <td><div class="actions">
+          <button class="sm" data-act="edit" data-id="${d.id}">แก้ไข</button>
+          <button class="sm" data-act="print" data-id="${d.id}">พิมพ์</button>
+          <button class="sm" data-act="copy" data-id="${d.id}">คัดลอก</button>
+          <button class="sm danger admin-only" data-act="del" data-id="${d.id}">ลบ</button>
+        </div></td></tr>`;
+    }).join('');
+  }
+  const total = list.reduce((a, d) => a + calc(d).total, 0);
+  const vat = list.reduce((a, d) => a + calc(d).vat, 0);
+  $('docSummary').innerHTML = `<span>จำนวน ${list.length} ใบ</span>${vat ? `<span>VAT รวม ${money(vat)}</span>` : ''}<span>ยอดรวม ${money(total)} บาท</span>`;
+}
+
+/* ================= ฟอร์มเอกสาร ================= */
+function newDocTemplate() {
+  const co = filter.company !== 'all' ? filter.company : companies[0].id;
+  const type = filter.type !== 'all' ? filter.type : 'receipt';
+  const d = today();
+  return {
+    id: null, companyId: co, type, no: genNo(co, type, d), date: d,
+    customerId: '', custName: '', custAddress: '', custTaxId: '', custBranch: '', plate: '',
+    items: [{ desc: '', qty: 1, price: 0 }], vatMode: 'exclude',
+    payMethod: 'เงินโอน', payRef: '', payDate: d, note: '', slips: [], printSlip: true,
+  };
+}
+
+function openDocForm(doc, isCopy = false) {
+  form = structuredClone(doc);
+  if (isCopy) {
+    form.id = null; form.date = today(); form.payDate = today(); form.slips = [];
+    form.no = genNo(form.companyId, form.type, form.date);
+  }
+  $('docModalTitle').textContent = form.id ? `แก้ไขเอกสาร ${form.no}` : 'สร้างเอกสารใหม่';
+  $('dCompany').innerHTML = companies.map(c => `<option value="${c.id}">[${esc(c.code)}] ${esc(c.name)}</option>`).join('');
+  $('dType').innerHTML = Object.entries(TYPES).map(([k, t]) => `<option value="${k}">${t.name}</option>`).join('');
+  $('dCompany').value = form.companyId;
+  $('dType').value = form.type;
+  $('dNo').value = form.no;
+  $('dDate').value = form.date;
+  fillCustSelect();
+  $('dCust').value = form.customerId || '';
+  $('dAddr').value = form.custAddress;
+  $('dTaxId').value = form.custTaxId;
+  $('dBranch').value = form.custBranch;
+  $('dPlate').value = form.plate;
+  $('dVatMode').value = form.vatMode;
+  $('dPay').value = form.payMethod;
+  $('dPayRef').value = form.payRef;
+  $('dPayDate').value = form.payDate;
+  $('dNote').value = form.note;
+  $('dPrintSlip').checked = form.printSlip !== false;
+  updatePlateList();
+  renderItems();
+  renderSlips();
+  toggleVat();
+  $('docModal').classList.add('open');
+}
+
+function fillCustSelect() {
+  const sorted = [...customers].sort((a, b) => a.name.localeCompare(b.name, 'th'));
+  $('dCust').innerHTML = `<option value="">— เลือกลูกค้า —</option>` + sorted.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+}
+
+function updatePlateList() {
+  const c = customer($('dCust').value);
+  const plates = c ? (c.plates[$('dCompany').value] || []) : [];
+  $('plateList').innerHTML = plates.map(p => `<option value="${esc(p)}">`).join('');
+  if (c && !$('dPlate').value && plates.length === 1) $('dPlate').value = plates[0];
+}
+
+function toggleVat() { $('vatWrap').style.visibility = $('dType').value === 'tax' ? 'visible' : 'hidden'; }
+
+function renderItems() {
+  $('itemRows').innerHTML = form.items.map((it, i) => `<tr>
+    <td class="c">${i + 1}</td>
+    <td><input data-i="${i}" data-k="desc" value="${esc(it.desc)}" placeholder="เช่น ค่าภาษีรถยนต์ประจำปี"></td>
+    <td><input data-i="${i}" data-k="qty" type="number" step="any" value="${it.qty}" class="r"></td>
+    <td><input data-i="${i}" data-k="price" type="number" step="any" value="${it.price}" class="r"></td>
+    <td class="r" id="amt${i}">${money(num(it.qty) * num(it.price))}</td>
+    <td><button class="sm danger" data-rm="${i}" title="ลบรายการ">✕</button></td></tr>`).join('');
+  renderTotals();
+}
+
+function renderTotals() {
+  form.type = $('dType').value;
+  form.vatMode = $('dVatMode').value;
+  const k = calc(form);
+  let h = '';
+  if (form.type === 'tax') {
+    h += `<div><span>มูลค่าสินค้า/บริการ (ก่อน VAT)</span><span>${money(k.before)}</span></div>`;
+    h += `<div><span>ภาษีมูลค่าเพิ่ม ${VAT_RATE}%</span><span>${money(k.vat)}</span></div>`;
+  }
+  h += `<div class="grand"><span>รวมทั้งสิ้น</span><span>${money(k.total)}</span></div>`;
+  h += `<div class="muted" style="justify-content:flex-end">(${bahtText(k.total)})</div>`;
+  $('formTotals').innerHTML = h;
+}
+
+function renderSlips() {
+  $('slipThumbs').innerHTML = form.slips.map((s, i) =>
+    `<div class="thumb"><img src="${s}"><button data-rmslip="${i}" title="ลบสลิป">✕</button></div>`).join('') ||
+    '<span class="muted">ยังไม่มีสลิป</span>';
+}
+
+async function addSlipFiles(files) {
+  const imgs = [...files].filter(f => f.type.startsWith('image/'));
+  for (const f of imgs) {
+    try { form.slips.push(await compressImage(f)); } catch (e) { alert(e.message); }
+  }
+  renderSlips();
+}
+
+function readForm() {
+  Object.assign(form, {
+    companyId: $('dCompany').value, type: $('dType').value, no: $('dNo').value.trim(), date: $('dDate').value || today(),
+    customerId: $('dCust').value, custAddress: $('dAddr').value.trim(), custTaxId: $('dTaxId').value.trim(), custBranch: $('dBranch').value.trim(),
+    plate: $('dPlate').value.trim(), vatMode: $('dVatMode').value, payMethod: $('dPay').value, payRef: $('dPayRef').value.trim(),
+    payDate: $('dPayDate').value, note: $('dNote').value.trim(), printSlip: $('dPrintSlip').checked,
+  });
+  const c = customer(form.customerId);
+  form.custName = c ? c.name : '';
+  form.items = form.items.filter(it => String(it.desc).trim() || num(it.price));
+}
+
+async function saveDoc(andPrint) {
+  readForm();
+  if (!form.customerId) return alert('กรุณาเลือกลูกค้า');
+  if (!form.items.length) { form.items = [{ desc: '', qty: 1, price: 0 }]; renderItems(); return alert('กรุณาใส่รายการอย่างน้อย 1 รายการ'); }
+  if (!form.no) form.no = genNo(form.companyId, form.type, form.date, form.id);
+  const dup = docs.find(d => d.no === form.no && d.id !== form.id);
+  if (dup && !confirm(`เลขที่ ${form.no} ซ้ำกับเอกสารอื่นแล้ว ต้องการบันทึกต่อหรือไม่?`)) return;
+
+  // อัปเดตข้อมูลลูกค้า (ที่อยู่ใช้ร่วมกันทุกบริษัท / ทะเบียนรถเก็บแยกตามบริษัท)
+  const c = customer(form.customerId);
+  let changed = false;
+  if (form.custAddress && form.custAddress !== c.address) { c.address = form.custAddress; changed = true; }
+  if (form.custTaxId && form.custTaxId !== c.taxId) { c.taxId = form.custTaxId; changed = true; }
+  if (form.custBranch && form.custBranch !== c.branch) { c.branch = form.custBranch; changed = true; }
+  if (form.plate) {
+    c.plates[form.companyId] = c.plates[form.companyId] || [];
+    if (!c.plates[form.companyId].includes(form.plate)) { c.plates[form.companyId].push(form.plate); changed = true; }
+  }
+  if (changed) await DB.put('customers', c);
+
+  const now = new Date().toISOString();
+  if (!form.id) { form.id = uid(); form.createdAt = now; form.createdBy = currentUser.name; }
+  form.updatedAt = now;
+  form.updatedBy = currentUser.name;
+  const saved = structuredClone(form);
+  await DB.put('docs', saved);
+  const idx = docs.findIndex(d => d.id === saved.id);
+  if (idx >= 0) docs[idx] = saved; else docs.push(saved);
+  closeModal('docModal');
+  renderDocs();
+  if (andPrint) openPreview(saved);
+}
+
+/* ================= ลูกค้า ================= */
+function renderCustomers() {
+  $('custHead').innerHTML = `<tr><th>ชื่อลูกค้า</th><th>ที่อยู่</th>${companies.map(c => `<th>ทะเบียน [${esc(c.code)}]</th>`).join('')}<th class="c">เอกสาร</th><th></th></tr>`;
+  const q = $('cQ').value.trim().toLowerCase();
+  const list = customers.filter(c => !q || [c.name, c.address, c.phone, ...Object.values(c.plates).flat()].join(' ').toLowerCase().includes(q))
+    .sort((a, b) => a.name.localeCompare(b.name, 'th'));
+  $('custRows').innerHTML = list.length ? list.map(c => `<tr>
+    <td><b>${esc(c.name)}</b>${c.phone ? `<br><span class="muted">${esc(c.phone)}</span>` : ''}</td>
+    <td style="max-width:280px">${esc(c.address)}</td>
+    ${companies.map(co => `<td>${(c.plates[co.id] || []).map(p => `<span class="plate">${esc(p)}</span>`).join('') || '<span class="muted">-</span>'}</td>`).join('')}
+    <td class="c">${docs.filter(d => d.customerId === c.id).length}</td>
+    <td><div class="actions"><button class="sm" data-cedit="${c.id}">แก้ไข</button><button class="sm danger" data-cdel="${c.id}">ลบ</button></div></td>
+  </tr>`).join('') : `<tr><td colspan="${companies.length + 4}" class="empty">ยังไม่มีลูกค้า</td></tr>`;
+}
+
+function openCustForm(c, cb) {
+  custEditing = c ? structuredClone(c) : { id: null, name: '', address: '', phone: '', taxId: '', branch: '', plates: {} };
+  custCallback = cb || null;
+  $('custModalTitle').textContent = c ? 'แก้ไขข้อมูลลูกค้า' : 'เพิ่มลูกค้าใหม่';
+  $('cName').value = custEditing.name;
+  $('cAddr').value = custEditing.address;
+  $('cPhone').value = custEditing.phone;
+  $('cTaxId').value = custEditing.taxId;
+  $('cBranch').value = custEditing.branch;
+  $('cPlates').innerHTML = companies.map(co => `<div><label>[${esc(co.code)}] ${esc(co.name)}</label>
+    <textarea data-plate="${co.id}" rows="2" placeholder="เช่น กข 1234 กรุงเทพมหานคร">${esc((custEditing.plates[co.id] || []).join('\n'))}</textarea></div>`).join('');
+  $('custModal').classList.add('open');
+  $('cName').focus();
+}
+
+async function saveCust() {
+  const name = $('cName').value.trim();
+  if (!name) return alert('กรุณาใส่ชื่อลูกค้า');
+  const dupe = customers.find(c => c.name === name && c.id !== custEditing.id);
+  if (dupe && !confirm(`มีลูกค้าชื่อ "${name}" อยู่แล้ว ต้องการเพิ่มซ้ำหรือไม่?`)) return;
+  Object.assign(custEditing, {
+    name, address: $('cAddr').value.trim(), phone: $('cPhone').value.trim(),
+    taxId: $('cTaxId').value.trim(), branch: $('cBranch').value.trim(), plates: {},
+  });
+  document.querySelectorAll('#cPlates textarea').forEach(t => {
+    const p = [...new Set(splitPlates(t.value))];
+    if (p.length) custEditing.plates[t.dataset.plate] = p;
+  });
+  if (!custEditing.id) custEditing.id = uid();
+  const saved = structuredClone(custEditing);
+  await DB.put('customers', saved);
+  const idx = customers.findIndex(c => c.id === saved.id);
+  if (idx >= 0) customers[idx] = saved; else customers.push(saved);
+  // อัปเดตชื่อในเอกสารเดิมให้ตรงกับข้อมูลลูกค้า
+  for (const d of docs.filter(d => d.customerId === saved.id && d.custName !== saved.name)) {
+    d.custName = saved.name; await DB.put('docs', d);
+  }
+  closeModal('custModal');
+  renderCustomers();
+  renderDocs();
+  if (custCallback) custCallback(saved);
+}
+
+/* ================= บริษัท ================= */
+function renderCompanies() {
+  $('coCards').innerHTML = companies.map(c => `<div class="card co-card" data-co="${c.id}">
+    <h3>บริษัทที่ ${companies.indexOf(c) + 1}</h3>
+    <div class="grid2">
+      <div style="grid-column:span 2"><label>ชื่อบริษัท</label><input data-f="name" value="${esc(c.name)}"></div>
+      <div><label>รหัสย่อ (ใช้ในเลขที่เอกสาร)</label><input data-f="code" value="${esc(c.code)}" maxlength="4"></div>
+      <div><label>โทรศัพท์</label><input data-f="phone" value="${esc(c.phone)}"></div>
+      <div><label>เลขประจำตัวผู้เสียภาษี</label><input data-f="taxId" value="${esc(c.taxId)}"></div>
+      <div><label>สาขา</label><input data-f="branch" value="${esc(c.branch)}"></div>
+      <div style="grid-column:span 2"><label>ที่อยู่</label><textarea data-f="address" rows="2">${esc(c.address)}</textarea></div>
+      <div style="grid-column:span 2"><label>โลโก้</label>
+        <div style="display:flex;gap:10px;align-items:center">
+          ${c.logo ? `<img class="logo-prev" src="${c.logo}">` : '<span class="muted">ไม่มีโลโก้</span>'}
+          <input type="file" accept="image/*" data-logo style="width:auto">
+          ${c.logo ? '<button class="sm danger" data-rmlogo>ลบโลโก้</button>' : ''}
+        </div></div>
+    </div>
+    <div class="foot"><button class="pri" data-saveco>บันทึก</button></div>
+  </div>`).join('');
+}
+
+async function saveCompany(card, patch = {}) {
+  if (!isAdmin()) return;
+  const c = company(card.dataset.co);
+  card.querySelectorAll('[data-f]').forEach(el => { c[el.dataset.f] = el.value.trim(); });
+  c.code = (c.code || '').toUpperCase();
+  Object.assign(c, patch);
+  await DB.put('companies', c);
+  renderCompanies();
+  renderDocs();
+}
+
+/* ================= พิมพ์ ================= */
+function pageHTML(d, withSlip, label, slipH = 60) {
+  const c = company(d.companyId) || {};
+  const t = TYPES[d.type];
+  const k = calc(d);
+  const isTax = d.type === 'tax';
+  const rows = d.items.map((it, i) => `<tr class="r-item">
+    <td class="c">${i + 1}</td><td>${esc(it.desc)}</td><td class="r">${qtyFmt(it.qty)}</td>
+    <td class="r">${money(it.price)}</td><td class="r">${money(num(it.qty) * num(it.price))}</td></tr>`).join('');
+  const showSlip = withSlip && d.slips.length > 0;
+  // ไม่แนบสลิป: แถวว่างแถวสุดท้ายจะยืดจนตารางเต็มหน้า
+  const blanks = showSlip ? '' : '<tr><td></td><td></td><td></td><td></td><td></td></tr>';
+
+  const sumRows = isTax
+    ? `<tr><td>มูลค่าก่อนภาษี</td><td class="r">${money(k.before)}</td></tr>
+       <tr><td>ภาษีมูลค่าเพิ่ม ${VAT_RATE}%</td><td class="r">${money(k.vat)}</td></tr>
+       <tr class="g"><td>รวมทั้งสิ้น</td><td class="r">${money(k.total)}</td></tr>`
+    : `<tr class="g"><td>รวมทั้งสิ้น</td><td class="r">${money(k.total)}</td></tr>`;
+
+  // สลิปมีความสูงคงที่ตามขนาดที่เลือก (มิลลิเมตร) แล้วเว้นที่ว่างที่เหลือไว้ก่อนช่องเซ็นชื่อ
+  let slipHTML = '';
+  if (showSlip) {
+    slipHTML = `<div class="p-slip"><div class="ttl">หลักฐานการชำระเงิน / สลิปโอนเงิน</div>
+      <div class="p-slip-row" style="height:${slipH}mm">
+      ${d.slips.map(s => `<div><img src="${s}"></div>`).join('')}</div></div><div class="p-spacer"></div>`;
+  }
+
+  const payLine = [d.payMethod, d.payRef, d.payDate ? 'วันที่ ' + thDate(d.payDate, false) : ''].filter(Boolean).join('  ·  ');
+  const payerLbl = d.type === 'deposit' ? 'ผู้ฝากชำระ' : 'ผู้จ่ายเงิน';
+  const recvLbl = d.type === 'deposit' ? 'ผู้รับฝาก' : 'ผู้รับเงิน';
+
+  return `<div class="page${showSlip ? '' : ' full'}">
+    <div class="p-head">
+      <div class="p-co">
+        ${c.logo ? `<img src="${c.logo}">` : ''}
+        <div>
+          <div class="nm">${esc(c.name)}</div>
+          <div style="white-space:pre-line">${esc(c.address)}</div>
+          ${c.phone ? `<div>โทร. ${esc(c.phone)}</div>` : ''}
+          ${c.taxId ? `<div>เลขประจำตัวผู้เสียภาษี ${esc(c.taxId)}${c.branch ? ' (' + esc(c.branch) + ')' : ''}</div>` : ''}
+        </div>
+      </div>
+      <div class="p-title">
+        <div class="th">${t.name}</div>
+        <div class="en">${t.en}</div>
+        <div class="lbl">${label}</div>
+      </div>
+    </div>
+    <div class="p-info">
+      <div class="bx cu"><table>
+        <tr><td>ลูกค้า</td><td>${esc(d.custName)}</td></tr>
+        <tr><td>ที่อยู่</td><td style="white-space:pre-line">${esc(d.custAddress)}</td></tr>
+        ${d.custTaxId ? `<tr><td>เลขผู้เสียภาษี</td><td>${esc(d.custTaxId)}${d.custBranch ? ' (' + esc(d.custBranch) + ')' : ''}</td></tr>` : ''}
+      </table></div>
+      <div class="bx dn"><table>
+        <tr><td>เลขที่</td><td>${esc(d.no)}</td></tr>
+        <tr><td>วันที่</td><td>${thDate(d.date)}</td></tr>
+        ${d.plate ? `<tr><td>ทะเบียนรถ</td><td><b>${esc(d.plate)}</b></td></tr>` : ''}
+      </table></div>
+    </div>
+    <div class="${showSlip ? '' : 'p-items-wrap'}"><table class="p-items">
+      <thead><tr><th style="width:10mm">ลำดับ</th><th>รายการ</th><th style="width:18mm">จำนวน</th><th style="width:27mm">ราคา/หน่วย</th><th style="width:30mm">จำนวนเงิน</th></tr></thead>
+      <tbody>${rows}${blanks}</tbody>
+    </table></div>
+    <div class="p-sum">
+      <div class="words">( ${bahtText(k.total)} )</div>
+      <table>${sumRows}</table>
+    </div>
+    <div class="p-pay"><b>ชำระโดย:</b> ${esc(payLine)}</div>
+    ${d.note ? `<div class="p-note"><b>หมายเหตุ:</b> ${esc(d.note)}</div>` : ''}
+    ${slipHTML}
+    <div class="p-sign">
+      <div><div class="ln"></div>${payerLbl}<br>วันที่ ......../......../........</div>
+      <div><div class="ln"></div>${recvLbl}<br>วันที่ ......../......../........</div>
+    </div>
+  </div>`;
+}
+
+function buildPrint() {
+  const withSlip = $('pSlip').checked;
+  const slipH = +$('pSlipSize').value;
+  let h = pageHTML(previewDoc, withSlip, 'ต้นฉบับ', slipH);
+  if ($('pCopy').checked) h += pageHTML(previewDoc, withSlip, 'สำเนา', slipH);
+  return h;
+}
+
+function openPreview(d) {
+  previewDoc = d;
+  $('pSlip').checked = d.slips.length > 0 && d.printSlip !== false;
+  $('pSlip').disabled = d.slips.length === 0;
+  $('pSlip').parentElement.title = d.slips.length ? '' : 'เอกสารนี้ยังไม่มีสลิป';
+  $('previewHost').innerHTML = buildPrint();
+  $('previewModal').classList.add('open');
+}
+
+async function doPrint() {
+  $('printRoot').innerHTML = buildPrint();
+  await Promise.all([...$('printRoot').querySelectorAll('img')].map(i => i.decode().catch(() => {})));
+  window.print();
+}
+
+/* ================= สำรองข้อมูล ================= */
+function exportData() {
+  const data = { app: 'receiptApp4co', version: 2, exportedAt: new Date().toISOString(), companies, customers, docs, users };
+  const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `backup-receipts-${today()}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+async function importData(file) {
+  if (!isAdmin()) return;
+  try {
+    const data = JSON.parse(await file.text());
+    if (data.app !== 'receiptApp4co') throw new Error('ไฟล์นี้ไม่ใช่ไฟล์สำรองของโปรแกรมนี้');
+    if (!confirm(`กู้คืนข้อมูลจากไฟล์ (เอกสาร ${data.docs.length} ใบ, ลูกค้า ${data.customers.length} ราย)?\nข้อมูลปัจจุบันจะถูกแทนที่ทั้งหมด`)) return;
+    for (const s of ['companies', 'customers', 'docs']) {
+      await DB.clear(s);
+      for (const v of data[s]) await DB.put(s, v);
+    }
+    // ไฟล์สำรองรุ่นใหม่มีรายชื่อผู้ใช้ด้วย → กู้คืนแล้วต้องล็อคอินใหม่
+    if (data.users?.length) {
+      await DB.clear('users');
+      for (const v of data.users) await DB.put('users', v);
+      alert('กู้คืนข้อมูลเรียบร้อย กรุณาเข้าสู่ระบบใหม่');
+      return logout();
+    }
+    await loadAll();
+    alert('กู้คืนข้อมูลเรียบร้อย');
+  } catch (e) { alert('กู้คืนไม่สำเร็จ: ' + e.message); }
+}
+
+async function showStorage() {
+  if (!navigator.storage?.estimate) return;
+  const e = await navigator.storage.estimate();
+  $('storageInfo').textContent = `พื้นที่ที่ใช้ไป: ${(e.usage / 1048576).toFixed(1)} MB จากที่เบราว์เซอร์อนุญาตประมาณ ${(e.quota / 1048576).toFixed(0)} MB · เอกสาร ${docs.length} ใบ · ลูกค้า ${customers.length} ราย`;
+}
+
+/* ================= ล็อคอิน / ผู้ใช้งาน ================= */
+async function hashPw(pw, salt) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: enc.encode(salt), iterations: 150000, hash: 'SHA-256' }, key, 256);
+  return [...new Uint8Array(bits)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+async function makeUser(u, password) {
+  if (password) { u.salt = uid() + uid(); u.hash = await hashPw(password, u.salt); }
+  return u;
+}
+const findUser = username => users.find(u => u.username.toLowerCase() === username.trim().toLowerCase());
+const activeAdmins = () => users.filter(u => u.role === 'admin' && u.active);
+
+let setupMode = false;
+async function startAuth() {
+  users = await DB.all('users');
+  setupMode = users.length === 0;
+  $('setupName').classList.toggle('hidden', !setupMode);
+  $('setupPass2').classList.toggle('hidden', !setupMode);
+  $('loginHint').textContent = setupMode ? 'ใช้งานครั้งแรก: สร้างบัญชีผู้ดูแลระบบ' : 'กรุณาเข้าสู่ระบบ';
+  $('loginBtn').textContent = setupMode ? 'สร้างบัญชีและเข้าสู่ระบบ' : 'เข้าสู่ระบบ';
+  let sid = null;
+  try { sid = sessionStorage.getItem('uid'); } catch (e) {}
+  const u = users.find(x => x.id === sid && x.active);
+  if (u) return enterApp(u);
+  $('loginScreen').classList.remove('hidden');
+  (setupMode ? $('lDisplay') : $('lUser')).focus();
+}
+
+async function onLoginSubmit(e) {
+  e.preventDefault();
+  const err = $('loginErr');
+  err.textContent = '';
+  const username = $('lUser').value.trim(), pw = $('lPass').value;
+  if (!username || !pw) { err.textContent = 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน'; return; }
+  if (!crypto?.subtle) { err.textContent = 'เบราว์เซอร์นี้ไม่รองรับ กรุณาใช้ Chrome หรือ Edge รุ่นใหม่'; return; }
+  $('loginBtn').disabled = true;
+  try {
+    if (setupMode) {
+      const name = $('lDisplay').value.trim() || username;
+      if (pw.length < 4) { err.textContent = 'รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร'; return; }
+      if (pw !== $('lPass2').value) { err.textContent = 'ยืนยันรหัสผ่านไม่ตรงกัน'; return; }
+      const u = await makeUser({ id: uid(), username, name, role: 'admin', active: true, createdAt: new Date().toISOString() }, pw);
+      await DB.put('users', u);
+      users.push(u);
+      return enterApp(u);
+    }
+    const u = findUser(username);
+    if (!u || !u.active || await hashPw(pw, u.salt) !== u.hash) {
+      await new Promise(r => setTimeout(r, 600));
+      err.textContent = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
+      $('lPass').value = ''; $('lPass').focus();
+      return;
+    }
+    enterApp(u);
+  } finally { $('loginBtn').disabled = false; }
+}
+
+async function enterApp(u) {
+  currentUser = u;
+  u.lastLogin = new Date().toISOString();
+  await DB.put('users', u);
+  try { sessionStorage.setItem('uid', u.id); } catch (e) {}
+  $('lPass').value = ''; $('lPass2').value = '';
+  $('loginScreen').classList.add('hidden');
+  document.querySelector('.app').classList.remove('hidden');
+  document.body.classList.toggle('is-admin', isAdmin());
+  $('whoName').textContent = `${u.name}${isAdmin() ? ' (ผู้ดูแล)' : ''}`;
+  await loadAll();
+  showView('docs');
+  lastActive = Date.now();
+}
+
+function logout() {
+  try { sessionStorage.removeItem('uid'); } catch (e) {}
+  location.reload();
+}
+
+let lastActive = Date.now();
+function watchIdle() {
+  ['mousemove', 'keydown', 'click', 'touchstart'].forEach(ev => document.addEventListener(ev, () => { lastActive = Date.now(); }, { passive: true }));
+  setInterval(() => {
+    if (currentUser && Date.now() - lastActive > IDLE_MINUTES * 60000) logout();
+  }, 30000);
+}
+
+function renderUsers() {
+  const dt = s => s ? new Date(s).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+  $('userRows').innerHTML = [...users].sort((a, b) => a.username.localeCompare(b.username)).map(u => `<tr>
+    <td><b>${esc(u.username)}</b>${u.id === currentUser.id ? ' <span class="muted">(คุณ)</span>' : ''}</td>
+    <td>${esc(u.name)}</td>
+    <td><span class="badge b-${u.role}">${u.role === 'admin' ? 'ผู้ดูแลระบบ' : 'ผู้ใช้ทั่วไป'}</span></td>
+    <td>${u.active ? 'ใช้งาน' : '<span class="badge b-off">ปิดใช้งาน</span>'}</td>
+    <td class="muted">${dt(u.lastLogin)}</td>
+    <td><div class="actions"><button class="sm" data-uedit="${u.id}">แก้ไข</button>
+      ${u.id !== currentUser.id ? `<button class="sm danger" data-udel="${u.id}">ลบ</button>` : ''}</div></td></tr>`).join('');
+}
+
+let userEditing = null;
+function openUserForm(u) {
+  userEditing = u ? structuredClone(u) : { id: null, username: '', name: '', role: 'user', active: true };
+  $('userModalTitle').textContent = u ? 'แก้ไขผู้ใช้' : 'เพิ่มผู้ใช้';
+  $('uUser').value = userEditing.username;
+  $('uName').value = userEditing.name;
+  $('uRole').value = userEditing.role;
+  $('uActive').checked = userEditing.active;
+  $('uPass').value = '';
+  $('uPassLbl').textContent = u ? 'รหัสผ่านใหม่ (เว้นว่างถ้าไม่ต้องการเปลี่ยน)' : 'รหัสผ่าน *';
+  $('userModal').classList.add('open');
+  $('uUser').focus();
+}
+
+async function saveUser() {
+  if (!isAdmin()) return;
+  const u = userEditing;
+  const username = $('uUser').value.trim(), name = $('uName').value.trim(), pw = $('uPass').value;
+  const role = $('uRole').value, active = $('uActive').checked;
+  if (!username || !name) return alert('กรุณากรอกชื่อผู้ใช้และชื่อที่แสดง');
+  if (/\s/.test(username)) return alert('ชื่อผู้ใช้ห้ามมีช่องว่าง');
+  const dupe = findUser(username);
+  if (dupe && dupe.id !== u.id) return alert('ชื่อผู้ใช้นี้มีอยู่แล้ว');
+  if (!u.id && !pw) return alert('กรุณาตั้งรหัสผ่าน');
+  if (pw && pw.length < 4) return alert('รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร');
+  const wasAdmin = users.find(x => x.id === u.id)?.role === 'admin' && users.find(x => x.id === u.id)?.active;
+  if (wasAdmin && (role !== 'admin' || !active) && activeAdmins().length <= 1) return alert('ต้องมีผู้ดูแลระบบที่ใช้งานอยู่อย่างน้อย 1 คน');
+  if (u.id === currentUser.id && !active) return alert('ไม่สามารถปิดใช้งานบัญชีของตัวเองได้');
+  Object.assign(u, { username, name, role, active });
+  if (!u.id) { u.id = uid(); u.createdAt = new Date().toISOString(); }
+  await makeUser(u, pw);
+  await DB.put('users', u);
+  const idx = users.findIndex(x => x.id === u.id);
+  if (idx >= 0) users[idx] = u; else users.push(u);
+  if (u.id === currentUser.id) {
+    currentUser = u;
+    if (!isAdmin()) return logout();
+    $('whoName').textContent = `${u.name} (ผู้ดูแล)`;
+  }
+  closeModal('userModal');
+  renderUsers();
+}
+
+async function deleteUser(id) {
+  const u = users.find(x => x.id === id);
+  if (!isAdmin() || !u || u.id === currentUser.id) return;
+  if (u.role === 'admin' && u.active && activeAdmins().length <= 1) return alert('ต้องมีผู้ดูแลระบบอย่างน้อย 1 คน');
+  if (!confirm(`ลบผู้ใช้ "${u.username}" ?\n(เอกสารที่ผู้ใช้นี้บันทึกไว้ยังคงอยู่)`)) return;
+  await DB.del('users', id);
+  users = users.filter(x => x.id !== id);
+  renderUsers();
+}
+
+async function changeOwnPassword() {
+  const u = currentUser;
+  if (await hashPw($('pwOld').value, u.salt) !== u.hash) return alert('รหัสผ่านเดิมไม่ถูกต้อง');
+  const pw = $('pwNew').value;
+  if (pw.length < 4) return alert('รหัสผ่านใหม่ต้องมีอย่างน้อย 4 ตัวอักษร');
+  if (pw !== $('pwNew2').value) return alert('ยืนยันรหัสผ่านใหม่ไม่ตรงกัน');
+  await makeUser(u, pw);
+  await DB.put('users', u);
+  closeModal('pwModal');
+  alert('เปลี่ยนรหัสผ่านเรียบร้อย');
+}
+
+/* ================= ทั่วไป ================= */
+function closeModal(id) { $(id).classList.remove('open'); }
+
+function showView(v) {
+  if ((v === 'companies' || v === 'users') && !isAdmin()) v = 'docs';
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('active', b.dataset.view === v));
+  ['docs', 'customers', 'companies', 'backup', 'users'].forEach(x => $('view-' + x).classList.toggle('hidden', x !== v));
+  if (v === 'docs') renderDocs();
+  if (v === 'customers') renderCustomers();
+  if (v === 'companies') renderCompanies();
+  if (v === 'backup') showStorage();
+  if (v === 'users') renderUsers();
+}
+
+async function loadAll() {
+  companies = await DB.all('companies');
+  if (!companies.length) {
+    for (const c of DEFAULT_COMPANIES) await DB.put('companies', c);
+    companies = structuredClone(DEFAULT_COMPANIES);
+  }
+  companies.sort((a, b) => a.id.localeCompare(b.id));
+  customers = await DB.all('customers');
+  docs = await DB.all('docs');
+  renderDocs();
+  renderCustomers();
+  renderCompanies();
+}
+
+function bindEvents() {
+  // ล็อคอิน / ผู้ใช้
+  $('loginForm').onsubmit = onLoginSubmit;
+  $('btnLogout').onclick = () => { if (confirm('ออกจากระบบ?')) logout(); };
+  $('btnChangePw').onclick = () => { ['pwOld', 'pwNew', 'pwNew2'].forEach(id => { $(id).value = ''; }); $('pwModal').classList.add('open'); $('pwOld').focus(); };
+  $('pwCancel').onclick = () => closeModal('pwModal');
+  $('pwSave').onclick = changeOwnPassword;
+  $('btnNewUser').onclick = () => openUserForm(null);
+  $('userRows').onclick = e => {
+    const ed = e.target.closest('[data-uedit]'), dl = e.target.closest('[data-udel]');
+    if (ed) openUserForm(users.find(u => u.id === ed.dataset.uedit));
+    if (dl) deleteUser(dl.dataset.udel);
+  };
+  $('uCancel').onclick = () => closeModal('userModal');
+  $('uSave').onclick = saveUser;
+
+  $('nav').onclick = e => { const b = e.target.closest('button'); if (b) showView(b.dataset.view); };
+
+  // ตัวกรองเอกสาร
+  $('coChips').onclick = e => { const b = e.target.closest('button'); if (b) { filter.company = b.dataset.co; renderDocs(); } };
+  $('typeTabs').onclick = e => { const b = e.target.closest('button'); if (b) { filter.type = b.dataset.type; renderDocs(); } };
+  $('fQ').oninput = e => { filter.q = e.target.value; renderDocs(); };
+  $('fFrom').onchange = e => { filter.from = e.target.value; renderDocs(); };
+  $('fTo').onchange = e => { filter.to = e.target.value; renderDocs(); };
+  $('btnNewDoc').onclick = () => openDocForm(newDocTemplate());
+  $('docRows').onclick = async e => {
+    const b = e.target.closest('button[data-act]'); if (!b) return;
+    const d = docs.find(x => x.id === b.dataset.id);
+    if (b.dataset.act === 'edit') openDocForm(d);
+    if (b.dataset.act === 'print') openPreview(d);
+    if (b.dataset.act === 'copy') openDocForm(d, true);
+    if (b.dataset.act === 'del' && isAdmin() && confirm(`ลบเอกสาร ${d.no} ?`)) {
+      await DB.del('docs', d.id); docs = docs.filter(x => x.id !== d.id); renderDocs();
+    }
+  };
+
+  // ฟอร์มเอกสาร
+  const regen = () => { $('dNo').value = genNo($('dCompany').value, $('dType').value, $('dDate').value, form.id); };
+  $('dCompany').onchange = () => { $('dPlate').value = ''; updatePlateList(); if (!form.id) regen(); };
+  $('dType').onchange = () => { toggleVat(); renderTotals(); if (!form.id) regen(); };
+  $('dDate').onchange = () => { if (!form.id) regen(); };
+  $('dRegen').onclick = e => { e.preventDefault(); regen(); };
+  $('dVatMode').onchange = renderTotals;
+  $('dCust').onchange = () => {
+    const c = customer($('dCust').value);
+    $('dAddr').value = c ? c.address : '';
+    $('dTaxId').value = c ? c.taxId : '';
+    $('dBranch').value = c ? c.branch : '';
+    $('dPlate').value = '';
+    updatePlateList();
+  };
+  $('dNewCust').onclick = () => openCustForm(null, c => {
+    fillCustSelect(); $('dCust').value = c.id; $('dCust').onchange();
+  });
+  $('itemRows').oninput = e => {
+    const el = e.target; if (!el.dataset.k) return;
+    const i = +el.dataset.i;
+    form.items[i][el.dataset.k] = el.dataset.k === 'desc' ? el.value : num(el.value);
+    $('amt' + i).textContent = money(num(form.items[i].qty) * num(form.items[i].price));
+    renderTotals();
+  };
+  $('itemRows').onclick = e => {
+    const b = e.target.closest('[data-rm]'); if (!b) return;
+    form.items.splice(+b.dataset.rm, 1);
+    if (!form.items.length) form.items.push({ desc: '', qty: 1, price: 0 });
+    renderItems();
+  };
+  $('addItem').onclick = () => { form.items.push({ desc: '', qty: 1, price: 0 }); renderItems(); };
+  $('slipPick').onclick = () => $('slipFile').click();
+  $('slipFile').onchange = e => { addSlipFiles(e.target.files); e.target.value = ''; };
+  const drop = $('slipDrop');
+  drop.ondragover = e => { e.preventDefault(); drop.classList.add('over'); };
+  drop.ondragleave = () => drop.classList.remove('over');
+  drop.ondrop = e => { e.preventDefault(); drop.classList.remove('over'); addSlipFiles(e.dataTransfer.files); };
+  document.addEventListener('paste', e => {
+    if (!$('docModal').classList.contains('open') || $('custModal').classList.contains('open')) return;
+    const files = [...e.clipboardData.items].filter(i => i.type.startsWith('image/')).map(i => i.getAsFile());
+    if (files.length) { e.preventDefault(); addSlipFiles(files); }
+  });
+  $('slipThumbs').onclick = e => {
+    const b = e.target.closest('[data-rmslip]');
+    if (b && confirm('ลบสลิปนี้?')) { form.slips.splice(+b.dataset.rmslip, 1); renderSlips(); }
+  };
+  $('dCancel').onclick = () => closeModal('docModal');
+  $('dSave').onclick = () => saveDoc(false);
+  $('dSavePrint').onclick = () => saveDoc(true);
+
+  // ลูกค้า
+  $('cQ').oninput = renderCustomers;
+  $('btnNewCust').onclick = () => openCustForm(null);
+  $('custRows').onclick = async e => {
+    const ed = e.target.closest('[data-cedit]'), dl = e.target.closest('[data-cdel]');
+    if (ed) openCustForm(customer(ed.dataset.cedit));
+    if (dl) {
+      const c = customer(dl.dataset.cdel);
+      const used = docs.filter(d => d.customerId === c.id).length;
+      if (!confirm(`ลบลูกค้า "${c.name}" ?${used ? `\n(มีเอกสาร ${used} ใบ — เอกสารยังคงอยู่)` : ''}`)) return;
+      await DB.del('customers', c.id); customers = customers.filter(x => x.id !== c.id); renderCustomers();
+    }
+  };
+  $('cCancel').onclick = () => closeModal('custModal');
+  $('cSave').onclick = saveCust;
+
+  // บริษัท
+  $('coCards').onclick = async e => {
+    const card = e.target.closest('.co-card'); if (!card) return;
+    if (e.target.closest('[data-saveco]')) { await saveCompany(card); alert('บันทึกข้อมูลบริษัทแล้ว'); }
+    if (e.target.closest('[data-rmlogo]')) await saveCompany(card, { logo: '' });
+  };
+  $('coCards').onchange = async e => {
+    if (!e.target.matches('[data-logo]') || !e.target.files[0]) return;
+    const logo = await compressImage(e.target.files[0], 500, 0.92);
+    await saveCompany(e.target.closest('.co-card'), { logo });
+  };
+
+  // พิมพ์
+  try { $('pSlipSize').value = localStorage.getItem('slipSize') || '60'; } catch (e) {}
+  $('pSlipSize').onchange = () => {
+    try { localStorage.setItem('slipSize', $('pSlipSize').value); } catch (e) {}
+    $('previewHost').innerHTML = buildPrint();
+  };
+  $('pSlip').onchange = $('pCopy').onchange = () => { $('previewHost').innerHTML = buildPrint(); };
+  $('pClose').onclick = () => closeModal('previewModal');
+  $('pPrint').onclick = doPrint;
+
+  // สำรองข้อมูล
+  $('btnExport').onclick = exportData;
+  $('btnImport').onclick = () => $('importFile').click();
+  $('importFile').onchange = e => { if (e.target.files[0]) importData(e.target.files[0]); e.target.value = ''; };
+
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    const open = ['custModal', 'userModal', 'pwModal', 'previewModal', 'docModal'].find(id => $(id).classList.contains('open'));
+    if (open) closeModal(open);
+  });
+}
+
+(async () => {
+  await DB.open();
+  navigator.storage?.persist?.();
+  bindEvents();
+  watchIdle();
+  await startAuth();
+})();
+</script>
+</body>
+</html>
